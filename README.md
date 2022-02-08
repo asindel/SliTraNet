@@ -3,6 +3,8 @@ Automatic Detection of Slide Transitions in Lecture Videos using Convolutional N
 
 This is the source code to the conference article "SliTraNet: Automatic Detection of Slide Transitions in Lecture Videos using Convolutional Neural Networks" accepted at OAGM Workshop 2021.
 
+If you use the code, please cite our paper (link will be added soon).
+
 ## Requirements
 
 Install the requirements using pip or conda (python 3):
