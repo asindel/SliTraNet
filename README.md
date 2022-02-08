@@ -21,15 +21,17 @@ The dataset needs to be in the following folder structure:
 - Bounding box labels in: "/videos/PHASE_bounding_box_list.txt"
 
 Bounding box labels define the rectangle of the slide area in the format: Videoname,x0,y0,x1,y1
-Here one example test_bounding_box_list.txt file (the header needs to be included):
-Video,x0,y0,x1,y1
-Architectures_1,38,57,1306,1008
-Architectures_2,38,57,1306,1008
+
+Here one example test_bounding_box_list.txt file (the header needs to be included):  
+Video,x0,y0,x1,y1  
+Architectures_1,38,57,1306,1008  
+Architectures_2,38,57,1306,1008  
 
 
 ### Pretrained weights
 
-The pretrained weights of SliTraNet from the paper are in the folder: "/weights"
+The pretrained weights of SliTraNet from the paper can be downloaded [here](https://drive.google.com/drive/folders/1aQDVplbbpt-zgH2O1q7685AZ1hl0BsVV?usp=sharing).
+Move them into the folder: "/weights"
 
 ### SliTraNet Inference: 
 
