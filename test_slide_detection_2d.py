@@ -17,8 +17,9 @@ import cv2
 import torch
 import torch.nn as nn
 
-import decord
-from decord import VideoReader
+#import decord
+#from decord import VideoReader
+from emily_helper_functions.video_reader import get_frames_as_tensor
 
 from model import *
 
@@ -28,10 +29,12 @@ from data.test_video_clip_dataset import BasicTransform
 
 def detect_initial_slide_transition_candidates_resnet2d(net, videofile, base, roi, load_size_roi, out_dir, opt):
     # load video file
-    vr = VideoReader(videofile, width=load_size_roi[1], height=load_size_roi[0]) 
-    
+    #vr = VideoReader(videofile, width=load_size_roi[1], height=load_size_roi[0]) 
+    vr = get_frames_as_tensor(videofile, "MoviePy", 2)
+
     #determine number of frames
     N_frames = len(vr)  
+    print(f"number of frames to be processed: {N_frames}")
     anchor_frame = None
     anchor_frame_idx = -1
     video_frame_idx = None
@@ -84,7 +87,7 @@ def detect_initial_slide_transition_candidates_resnet2d(net, videofile, base, ro
         imgs = my_transform(imgs)
         
         with torch.no_grad():
-            imgs = imgs.cuda()
+            #imgs = imgs.cuda()
              
             pred = net(imgs.unsqueeze(0))
             pred = pred.squeeze(1)            
@@ -141,22 +144,22 @@ def test_resnet2d(opt):
     ####### Create model
     # --------------------------------------------------------------- 
     net = define_resnet2d(opt)       
-    net = net.cuda()
+    #net = net.cuda()
     net = loadNetwork(net, opt.model_path, checkpoint=opt.load_checkpoint, prefix='')
     net.eval()
 
     #### Create dataloader
     # ---------------------------------------------------------------  
-    video_dir = opt.dataset_dir + "/videos/" + opt.phase   
+    video_dir = "videos/" + opt.phase   #opt.dataset_dir + "/videos/" + opt.phase   
 
     videoFilenames = []
     videoFilenames.extend(os.path.join(video_dir, x)
                                          for x in sorted(os.listdir(video_dir)) if is_video_file(x))
     
-    roi_path = os.path.join(opt.dataset_dir,"videos", opt.phase+'_bounding_box_list.txt')
+    roi_path = os.path.join("videos", opt.phase+'_bounding_box_list.txt') # os.path.join(opt.dataset_dir,"videos", opt.phase+'_bounding_box_list.txt')
     rois = read_labels(roi_path)
 
-    decord.bridge.set_bridge('torch')
+    #decord.bridge.set_bridge('torch')
     
     for k,videofile in enumerate(videoFilenames):
         print("Processing video No. {}: {}".format(k+1, videofile))

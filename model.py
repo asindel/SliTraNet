@@ -54,10 +54,10 @@ class ResNet3d(nn.Module):
 def loadNetwork(net, model_path, checkpoint=True, prefix='module.'):
     print("Loading weights from:", model_path)
     if checkpoint:
-        trained_checkpoint = torch.load(model_path)
+        trained_checkpoint = torch.load(model_path, map_location='cpu')
         trained_state_dict = trained_checkpoint["state_dict"]
     else:
-        trained_state_dict =  torch.load(model_path)
+        trained_state_dict =  torch.load(model_path, map_location='cpu')
     
     my_state_dict = net.state_dict()
     for key in my_state_dict:

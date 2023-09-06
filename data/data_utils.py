@@ -8,9 +8,9 @@ Created on Wed Feb 10 16:49:20 2021
 import numpy as np
 import os
 
-import decord
-from decord import VideoReader
-
+#import decord
+#from decord import VideoReader
+from emily_helper_functions.video_reader import get_frames_as_tensor
 
 def is_image_file(filename):
     return any(filename.endswith(extension) for extension in [".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".PNG", ".JPG", ".JPEG", ".BMP", ".TIF", ".TIFF"])
@@ -38,7 +38,9 @@ def determine_load_size_roi(videofile, rois, patch_size, full_size=False):
     #h = roi[3] - roi[1] #y2-y1
     #scaling factor
     f = patch_size/w            
-    vr0 = VideoReader(videofile)            
+    #vr0 = VideoReader(videofile)   
+    vr0 = get_frames_as_tensor(videofile, "MoviePy", 2)
+
     frame = vr0[0]
     H1,W1,_ = frame.shape #HR video: 1920x1080
     H2 = round(H1*f)
@@ -77,11 +79,11 @@ def read_pred_slide_ids_from_file(file):
     frame_ids_2 = []
     for line in f:
         line_split = line.split(", ")
-        slide_id = int(np.float(line_split[0]))
+        slide_id = int(float(line_split[0])) # removed np.float because deprecated
         slide_ids.append(slide_id)        
-        frame_id_1 = int(np.float(line_split[1]))
+        frame_id_1 = int(float(line_split[1]))
         frame_ids_1.append(frame_id_1)
-        frame_id_2 = int(np.float(line_split[2]))
+        frame_id_2 = int(float(line_split[2]))
         frame_ids_2.append(frame_id_2)          
     f.close()   
     return np.array(slide_ids), np.array(frame_ids_1), np.array(frame_ids_2)

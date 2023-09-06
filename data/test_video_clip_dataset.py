@@ -12,8 +12,9 @@ import torch
 import torch.utils.data as data
 
 import cv2
-import decord
-from decord import VideoReader
+#import decord
+#from decord import VideoReader
+from emily_helper_functions.video_reader import get_frames_as_tensor
 
 from data.data_utils import *
 
@@ -54,11 +55,12 @@ class VideoClipTestDataset(data.Dataset):
         self.temporal_sampling = temporal_sampling
         self.n_channels = n_channels        
 
-        decord.bridge.set_bridge('torch')
+        #decord.bridge.set_bridge('torch')
 
         clip_list = []
         transition_no = []
-        self.vr = VideoReader(videofile, width=self.load_size[1], height=self.load_size[0])
+        #self.vr = VideoReader(videofile, width=self.load_size[1], height=self.load_size[0])
+        self.vr = get_frames_as_tensor(videofile)
         self.roi = roi
         self.transform = transform
 

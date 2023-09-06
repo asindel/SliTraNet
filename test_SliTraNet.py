@@ -13,8 +13,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-import decord
-from decord import VideoReader
+#import decord
+#from decord import VideoReader
+from emily_helper_functions.video_reader import get_frames_as_tensor
 
 from model import *
 from test_slide_detection_2d import detect_initial_slide_transition_candidates_resnet2d
@@ -46,54 +47,56 @@ def test_SliTraNet(opt):
     # ---------------------------------------------------------------
     opt.n_class = 1
     net2d = define_resnet2d(opt)
-    net2d = net2d.cuda()
+    #net2d = net2d.cuda()
     net2d = loadNetwork(net2d, opt.model_path_2D, checkpoint=opt.load_checkpoint, prefix='')
     net2d.eval()    
     
     opt.n_class = 3
     net1 = ResNet3d(opt)
-    net1 = net1.cuda()
+    #net1 = net1.cuda()
     net1 = loadNetwork(net1, opt.model_path_1, checkpoint=opt.load_checkpoint, prefix='module.')
     net1.eval() 
 
     opt.n_class = 4
     net2 = ResNet3d(opt)
-    net2 = net2.cuda()
+    #net2 = net2.cuda()
     net2 = loadNetwork(net2, opt.model_path_2, checkpoint=opt.load_checkpoint, prefix='module.')
     net2.eval() 
 
 
     #### Create dataloader
     # --------------------------------------------------------------- 
-    video_dir = opt.dataset_dir + "/videos/" + opt.phase   
+    video_dir = "videos/" + opt.phase  # opt.dataset_dir + "/videos/" + opt.phase   
 
     videoFilenames = []
     videoFilenames.extend(os.path.join(video_dir, x)
                                          for x in sorted(os.listdir(video_dir)) if is_video_file(x))
-    
-    roi_path = os.path.join(opt.dataset_dir,"videos", opt.phase+'_bounding_box_list.txt')
+    print("videoFilenames:", videoFilenames)
+    roi_path = os.path.join("videos", opt.phase+'_bounding_box_list.txt') # os.path.join(opt.dataset_dir,"videos", opt.phase+'_bounding_box_list.txt')
     rois = read_labels(roi_path)
-    
-    decord.bridge.set_bridge('torch')
+    print("Bounding Box labels READ:", rois)
+    #decord.bridge.set_bridge('torch')
     
     for k,videofile in enumerate(videoFilenames):
-        printLog("Processing video No. {}: {}".format(k+1, videofile))
+        print("--- Processing video No. {}: {} ---".format(k+1, videofile))
         
         base, roi, load_size_roi, load_size_full = determine_load_size_roi(videofile, rois, opt.patch_size, full_size=True)
 
         ##################################################################
         ##  Stage 1: detect initial slide-slide and slide-video candidates  ##
         ##################################################################        
-       
+        print("--- start stage 1 ---")
         predfile = os.path.join(opt.pred_dir,base+'_results.txt')
         
         if os.path.exists(predfile)==False:
             # run stage 1
             if os.path.exists(opt.pred_dir)==False:
                 os.makedirs(opt.pred_dir)            
-            detect_initial_slide_transition_candidates_resnet2d(net2d, videofile, base, roi, load_size_roi, opt.pred_dir, opt)
-            
+        detect_initial_slide_transition_candidates_resnet2d(net2d, videofile, base, roi, load_size_roi, opt.pred_dir, opt)
+            #### prints if the slides are static or not at this stage for each frmae!!! 
+            ### and length of frame ids ? 144 ? 
         # load results of stage 1
+        print("--- loading results of stage 1 ---")
         slide_ids, slide_frame_ids_1, slide_frame_ids_2 = read_pred_slide_ids_from_file(predfile)
         slide_transition_pairs, frame_types, slide_transition_types = extract_slide_transitions(slide_ids, slide_frame_ids_1, slide_frame_ids_2)
 
@@ -118,7 +121,7 @@ def test_SliTraNet(opt):
 
         with torch.no_grad():
             for j1, (clips, clip_inds, clip_transition_nums) in enumerate(full_clip_loader):
-                clips = clips.cuda()
+                #clips = clips.cuda()
                  
                 pred1 = net1(clips)
                 
@@ -152,7 +155,7 @@ def test_SliTraNet(opt):
             slide_transition_prediction = dict()
             
             for j1, (clips, clip_inds, clip_transition_nums) in enumerate(clip_loader):
-                clips = clips.cuda()
+                #clips = clips.cuda()
               
                 pred2 = net2(clips)
                 
@@ -200,28 +203,32 @@ def test_SliTraNet(opt):
             
                   
 if __name__ == '__main__':
+    from datetime import datetime
+    print(datetime.now())
+    ## remove pre-prend: C:/Users/Sindel/Project/Code/SliTraNet/
     parser = argparse.ArgumentParser('slide_detection') 
-    parser.add_argument('--dataset_dir', help='path to dataset dir',type=str, default='C:/Users/Sindel/Project/Data/datasets/LectureVideos') 
-    parser.add_argument('--out_dir', help='path to result dir',type=str, default='C:/Users/Sindel/Project/Code/SliTraNet/results/test/SliTraNet-gray-RGB')
+    parser.add_argument('--dataset_dir', help='path to dataset dir',type=str, default='/videos') 
+    parser.add_argument('--out_dir', help='path to result dir',type=str, default='results/test/SliTraNet-gray-RGB')
     parser.add_argument('--patch_size', type=int, default=256, help='network input patch size')
     parser.add_argument('--phase', type=str, default='test', help='train, val, test, etc')
     parser.add_argument('--load_checkpoint', type=bool, default=False, help='model_path is path to checkpoint (True) or path to state dict (False)')
     ### Parameters for 2-D CNN
-    parser.add_argument('--pred_dir', help='path to 2d result dir',type=str, default='C:/Users/Sindel/Project/Code/SliTraNet/results/test/resnet18_gray')
+    parser.add_argument('--pred_dir', help='path to 2d result dir',type=str, default='results/test/resnet18_gray')
     parser.add_argument('--backbone_2D', help='name of 2d backbone (resnet18 or resnet50)',type=str, default='resnet18')   
-    parser.add_argument('--model_path_2D', help='path of weights resnet2d',type=str, default='C:/Users/Sindel/Project/Code/SliTraNet/weights/Frame_similarity_ResNet18_gray.pth')
+    parser.add_argument('--model_path_2D', help='path of weights resnet2d',type=str, default='weights/Frame_similarity_ResNet18_gray.pth')
     parser.add_argument('--slide_thresh', type=int, default=8, help='threshold for minimum static slide length')
     parser.add_argument('--video_thresh', type=int, default=13, help='threshold for minimum video length to distinguish from gradual transition')
     parser.add_argument('--input_nc', type=int, default=2, help='number of input channels for ResNet: gray:2, RGB:6')
     parser.add_argument('--in_gray', type=bool, default=True, help='run resnet2d with grayscale input, else RGB')    
     ### Parameters for 3-D CNN
     parser.add_argument('--backbone_3D', help='name of 3d backbone (resnet18 or resnet50)',type=str, default='resnet50')
-    parser.add_argument('--model_path_1', help='path of weights for 3D CNN Slide video detection',type=str, default='C:/Users/Sindel/Project/Code/SliTraNet/weights/Slide_video_detection_3DResNet50.pth')
-    parser.add_argument('--model_path_2', help='path of weights for 3D CNN Slide transition detection',type=str, default='C:/Users/Sindel/Project/Code/SliTraNet/weights/Slide_transition_detection_3DResNet50.pth')
+    parser.add_argument('--model_path_1', help='path of weights for 3D CNN Slide video detection',type=str, default='weights/Slide_video_detection_3DResNet50.pth')
+    parser.add_argument('--model_path_2', help='path of weights for 3D CNN Slide transition detection',type=str, default='weights/Slide_transition_detection_3DResNet50.pth')
     parser.add_argument('--temporal_sampling', type=int, default=1, help='temporal sampling factor, e.g. 1: each frame, 5: each 5th frame')
     parser.add_argument('--clip_length', type=int, default=8, help='network input patch size')  
     parser.add_argument('--batch_size', type=int, default=32, help='batch size')   
 
     opt = parser.parse_args()  
 
-    test_SliTraNet(opt)   
+    test_SliTraNet(opt)  
+    print(datetime.now()) 
