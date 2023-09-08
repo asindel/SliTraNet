@@ -103,7 +103,7 @@ class VideoClipTestDataset(data.Dataset):
         transition_no = self.transition_no_list[index]
 
         #read frames        
-        frames = torch.stack(tuple(self.vr[indx].to('cpu') for indx in clip_files), 0) #np.array([self.vr[indx].to('cpu') for indx in clip_files]) #.get_batch(clip_files)
+        frames = torch.stack(tuple(self.vr[indx] for indx in clip_files), 0) # removed .to('cpu') #np.array([self.vr[indx].to('cpu') for indx in clip_files]) #.get_batch(clip_files)
         # crop to bounding box region
         if self.roi is not None:
             frames = crop_frames(frames,self.roi[0],self.roi[1],self.roi[2],self.roi[3])   
