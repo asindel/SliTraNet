@@ -26,6 +26,7 @@ from model import *
 from data.data_utils import *
 from data.test_video_clip_dataset import BasicTransform
 
+torch.set_default_device("mps")
 
 def detect_initial_slide_transition_candidates_resnet2d(net, videofile, base, roi, load_size_roi, out_dir, opt):
     # load video file
@@ -61,14 +62,14 @@ def detect_initial_slide_transition_candidates_resnet2d(net, videofile, base, ro
             
         if opt.in_gray: #opencv rgb2gray for torch
             frame = 0.299*frame[...,0]+0.587*frame[...,1]+0.114*frame[...,2]
-            frame = frame.unsqueeze(2)
+            frame = frame.unsqueeze(2) # but nothing changed!!
         
         # crop to bounding box region
-        frame = crop_frame(frame,roi[0],roi[1],roi[2],roi[3]) 
+        frame = crop_frame(frame,roi[0],roi[1],roi[2],roi[3])  # frame.shape = torch.Size([136, 256, 1])
         #scale to max size (in case patch size changed)
-        img_max_size = max(frame.shape[0], frame.shape[1])
+        img_max_size = max(frame.shape[0], frame.shape[1]) # None, 256
         scaling_factor = opt.patch_size / img_max_size
-        if scaling_factor != 1:            
+        if scaling_factor != 1:         
             frame = cv2.resize(frame, (round(frame.shape[1] * scaling_factor), round(frame.shape[0] * scaling_factor)), interpolation = cv2.INTER_NEAREST)
             H,W,C = frame.shape
             imgs[1,:H,:W,:C] = frame
@@ -92,8 +93,8 @@ def detect_initial_slide_transition_candidates_resnet2d(net, videofile, base, ro
             pred = net(imgs.unsqueeze(0))
             pred = pred.squeeze(1)            
             pred = activation(pred)
-            #print(pred)
             if pred<0.5: #transition (class 0)
+                print(pred)
                 if (i - anchor_frame_idx) > opt.slide_thresh: #static frame
                     if video_frame_idx is not None: 
                         if (video_frame_idx - prev_video_frame_idx) > opt.video_thresh:
@@ -125,11 +126,13 @@ def detect_initial_slide_transition_candidates_resnet2d(net, videofile, base, ro
     
     #write to file
     logfile_path = os.path.join(out_dir, base + "_results.txt")
+    print("stage 1 debugging, check file path", logfile_path)
     f = open(logfile_path, "w")
     f.write('Slide No, FrameID0, FrameID1\n')
     f.close()    
 
-    for slide_id,frame_id_1,frame_id_2 in zip(slide_ids,frame_ids_1,frame_ids_2):               
+    for slide_id,frame_id_1,frame_id_2 in zip(slide_ids,frame_ids_1,frame_ids_2):     
+        print("{}, {}, {}\n".format(slide_id,frame_id_1,frame_id_2))          
         f = open(logfile_path, "a")
         f.write("{}, {}, {}\n".format(slide_id,frame_id_1,frame_id_2))
         f.close() 

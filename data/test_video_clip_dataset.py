@@ -14,7 +14,6 @@ import torch.utils.data as data
 import cv2
 #import decord
 #from decord import VideoReader
-from emily_helper_functions.video_reader import get_frames_as_tensor
 
 from data.data_utils import *
 
@@ -60,7 +59,7 @@ class VideoClipTestDataset(data.Dataset):
         clip_list = []
         transition_no = []
         #self.vr = VideoReader(videofile, width=self.load_size[1], height=self.load_size[0])
-        self.vr = get_frames_as_tensor(videofile)
+        self.vr = get_frames_as_tensor(videofile, "MoviePy", 2)
         self.roi = roi
         self.transform = transform
 
@@ -100,12 +99,11 @@ class VideoClipTestDataset(data.Dataset):
             
     def __getitem__(self, index):
         
-        clip_files = self.clip_list[index]
+        clip_files = self.clip_list[index] #  returns [24 25 26 27 28 29 30 31], and 31 other clip_files !! 
         transition_no = self.transition_no_list[index]
 
         #read frames        
-        frames = self.vr.get_batch(clip_files)
-            
+        frames = torch.stack(tuple(self.vr[indx].to('cpu') for indx in clip_files), 0) #np.array([self.vr[indx].to('cpu') for indx in clip_files]) #.get_batch(clip_files)
         # crop to bounding box region
         if self.roi is not None:
             frames = crop_frames(frames,self.roi[0],self.roi[1],self.roi[2],self.roi[3])   
@@ -117,9 +115,9 @@ class VideoClipTestDataset(data.Dataset):
         scaling_factor = self.patch_size / img_max_size
         if scaling_factor != 1:            
             for i,img in enumerate(frames):
-                img = cv2.resize(img, (round(img.shape[1] * scaling_factor), round(img.shape[0] * scaling_factor)), interpolation = cv2.INTER_NEAREST)
+                img = cv2.resize(img.numpy(), (round(img.shape[1] * scaling_factor), round(img.shape[0] * scaling_factor)), interpolation = cv2.INTER_NEAREST)
                 H,W,C = img.shape
-                imgs[i,:H,:W,:C] = img
+                imgs[i,:H,:W,:C] = torch.from_numpy(img)
         else:
             N,H,W,C = frames.shape
             imgs[:,:H,:W,:C] = frames

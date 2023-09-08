@@ -7,9 +7,10 @@ Created on Fri Apr 30 16:00:51 2021
 
 import torch
 import torch.nn as nn
-
+import os
 from backbones import resnet2d, resnet3d
 
+torch.set_default_device("mps")
 
 def define_resnet2d(cfg):
     """
@@ -45,6 +46,9 @@ class ResNet3d(nn.Module):
         self.conv_final = nn.Conv2d(num_ch_3d, cfg.n_class, kernel_size=1, bias=False)
 
     def forward(self, x):
+        print("check where tensor is in model.py forward function", x.get_device())
+        x = x.to('cpu')
+        print("check if tensor now moved to mps", x.get_device())
         x = self.backbone_3d(x)
         x = torch.squeeze(x, dim=2)
         out = self.conv_final(x)
