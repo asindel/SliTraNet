@@ -26,12 +26,10 @@ from model import *
 from data.data_utils import *
 from data.test_video_clip_dataset import BasicTransform
 
-torch.set_default_device("mps")
-
 def detect_initial_slide_transition_candidates_resnet2d(net, videofile, base, roi, load_size_roi, out_dir, opt):
     # load video file
     #vr = VideoReader(videofile, width=load_size_roi[1], height=load_size_roi[0]) 
-    vr = get_frames_as_tensor(videofile, "MoviePy", 2)
+    vr = get_frames_as_tensor(videofile, "MoviePy", 1)
 
     #determine number of frames
     N_frames = len(vr)  

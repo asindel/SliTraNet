@@ -102,7 +102,7 @@ def test_SliTraNet(opt):
         slide_ids, slide_frame_ids_1, slide_frame_ids_2 = read_pred_slide_ids_from_file(predfile)
         slide_transition_pairs, frame_types, slide_transition_types = extract_slide_transitions(slide_ids, slide_frame_ids_1, slide_frame_ids_2)
 
-        sys.exit()
+        #sys.exit()
         ##################################################################
         ##  Stage 2: check slide - video candidates                     ##
         ##################################################################
@@ -124,7 +124,7 @@ def test_SliTraNet(opt):
             for j1, (clips, clip_inds, clip_transition_nums) in enumerate(full_clip_loader):
                 #clips = clips.cuda()
                 print(f"stage 2: clips is currently at {clips.get_device()} before net1")
-                torch.set_default_device("cpu") # avoid runtime errors on mpu
+                #torch.set_default_device("cpu") # avoid runtime errors on mpu
                 pred1 = net1(clips) 
 
                 #extract ids for slide transition candidates
@@ -207,8 +207,7 @@ def test_SliTraNet(opt):
 if __name__ == '__main__':
     from datetime import datetime
     print(datetime.now())
-    torch.set_default_device("mps")
-    os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+    torch.set_default_device('cpu')
     ## remove pre-prend: C:/Users/Sindel/Project/Code/SliTraNet/
     parser = argparse.ArgumentParser('slide_detection') 
     parser.add_argument('--dataset_dir', help='path to dataset dir',type=str, default='../videos') 
@@ -220,8 +219,8 @@ if __name__ == '__main__':
     parser.add_argument('--pred_dir', help='path to 2d result dir',type=str, default='results/test/resnet18_gray')
     parser.add_argument('--backbone_2D', help='name of 2d backbone (resnet18 or resnet50)',type=str, default='resnet18')   
     parser.add_argument('--model_path_2D', help='path of weights resnet2d',type=str, default='../weights/Frame_similarity_ResNet18_gray.pth')
-    parser.add_argument('--slide_thresh', type=int, default=4, help='threshold for minimum static slide length')
-    parser.add_argument('--video_thresh', type=int, default=6, help='threshold for minimum video length to distinguish from gradual transition') # change from 13
+    parser.add_argument('--slide_thresh', type=int, default=9, help='threshold for minimum static slide length')
+    parser.add_argument('--video_thresh', type=int, default=13, help='threshold for minimum video length to distinguish from gradual transition') # change from 13
     parser.add_argument('--input_nc', type=int, default=2, help='number of input channels for ResNet: gray:2, RGB:6')
     parser.add_argument('--in_gray', type=bool, default=True, help='run resnet2d with grayscale input, else RGB')    
     ### Parameters for 3-D CNN

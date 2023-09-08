@@ -59,7 +59,7 @@ class VideoClipTestDataset(data.Dataset):
         clip_list = []
         transition_no = []
         #self.vr = VideoReader(videofile, width=self.load_size[1], height=self.load_size[0])
-        self.vr = get_frames_as_tensor(videofile, "MoviePy", 2)
+        self.vr = get_frames_as_tensor(videofile, "MoviePy", 1)
         self.roi = roi
         self.transform = transform
 
@@ -101,7 +101,7 @@ class VideoClipTestDataset(data.Dataset):
         
         clip_files = self.clip_list[index] #  returns [24 25 26 27 28 29 30 31], and 31 other clip_files !! 
         transition_no = self.transition_no_list[index]
-
+        print("clip files:", clip_files, "transition_no", transition_no)
         #read frames        
         frames = torch.stack(tuple(self.vr[indx] for indx in clip_files), 0) # removed .to('cpu') #np.array([self.vr[indx].to('cpu') for indx in clip_files]) #.get_batch(clip_files)
         # crop to bounding box region

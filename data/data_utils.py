@@ -39,7 +39,7 @@ def determine_load_size_roi(videofile, rois, patch_size, full_size=False):
     #scaling factor
     f = patch_size/w            
     #vr0 = VideoReader(videofile)   
-    vr0 = get_frames_as_tensor(videofile, "MoviePy", 2)
+    vr0 = get_frames_as_tensor(videofile, "MoviePy", 1)
 
     frame = vr0[0]
     H1,W1,_ = frame.shape #HR video: 1920x1080
