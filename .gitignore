@@ -1,0 +1,9 @@
+# Folder view configuration files
+.DS_Store
+Desktop.ini
+
+# Compile C++ files
+*.out
+
+# Set results folder as untracked
+/results/
