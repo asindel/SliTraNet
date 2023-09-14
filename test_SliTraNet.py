@@ -96,13 +96,12 @@ def test_SliTraNet(opt):
                 os.makedirs(opt.pred_dir)            
         detect_initial_slide_transition_candidates_resnet2d(net2d, videofile, base, roi, load_size_roi, opt.pred_dir, opt)
             #### prints if the slides are static or not at this stage for each frmae!!! 
-            ### and length of frame ids ? 144 ? 
         # load results of stage 1
         print("--- loading results of stage 1 ---")
         slide_ids, slide_frame_ids_1, slide_frame_ids_2 = read_pred_slide_ids_from_file(predfile)
         slide_transition_pairs, frame_types, slide_transition_types = extract_slide_transitions(slide_ids, slide_frame_ids_1, slide_frame_ids_2)
-
-        sys.exit()
+        print(slide_ids, slide_frame_ids_1, slide_frame_ids_2)
+        print("slide_transition_pairs:", slide_transition_pairs)
         ##################################################################
         ##  Stage 2: check slide - video candidates                     ##
         ##################################################################
@@ -124,7 +123,7 @@ def test_SliTraNet(opt):
             for j1, (clips, clip_inds, clip_transition_nums) in enumerate(full_clip_loader):
                 #clips = clips.cuda()
                 print(f"stage 2: clips is currently at {clips.get_device()} before net1")
-                torch.set_default_device("cpu") # avoid runtime errors on mpu
+                #torch.set_default_device("cpu") # avoid runtime errors on mpu
                 pred1 = net1(clips) 
 
                 #extract ids for slide transition candidates
@@ -153,12 +152,12 @@ def test_SliTraNet(opt):
                                                 transform = BasicTransform(data_shape = "CNHW"),
                                                 roi = roi)
             clip_loader = torch.utils.data.DataLoader(clip_dataset, batch_size=opt.batch_size, shuffle=False, num_workers=0)
-
+            print("debugging and understanding: ", type(clip_dataset), type(clip_loader))
             slide_transition_prediction = dict()
             
             for j1, (clips, clip_inds, clip_transition_nums) in enumerate(clip_loader):
                 #clips = clips.cuda()
-              
+                print("enumerating clip_loader:", j1, clip_inds, clip_transition_nums)
                 pred2 = net2(clips)
                 
                 #extract ids for slide transition candidates
@@ -207,8 +206,7 @@ def test_SliTraNet(opt):
 if __name__ == '__main__':
     from datetime import datetime
     print(datetime.now())
-    torch.set_default_device("mps")
-    os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+    torch.set_default_device('cpu')
     ## remove pre-prend: C:/Users/Sindel/Project/Code/SliTraNet/
     parser = argparse.ArgumentParser('slide_detection') 
     parser.add_argument('--dataset_dir', help='path to dataset dir',type=str, default='../videos') 
@@ -220,8 +218,8 @@ if __name__ == '__main__':
     parser.add_argument('--pred_dir', help='path to 2d result dir',type=str, default='results/test/resnet18_gray')
     parser.add_argument('--backbone_2D', help='name of 2d backbone (resnet18 or resnet50)',type=str, default='resnet18')   
     parser.add_argument('--model_path_2D', help='path of weights resnet2d',type=str, default='../weights/Frame_similarity_ResNet18_gray.pth')
-    parser.add_argument('--slide_thresh', type=int, default=4, help='threshold for minimum static slide length')
-    parser.add_argument('--video_thresh', type=int, default=6, help='threshold for minimum video length to distinguish from gradual transition') # change from 13
+    parser.add_argument('--slide_thresh', type=int, default=3, help='threshold for minimum static slide length')
+    parser.add_argument('--video_thresh', type=int, default=10, help='threshold for minimum video length to distinguish from gradual transition') # change from 13
     parser.add_argument('--input_nc', type=int, default=2, help='number of input channels for ResNet: gray:2, RGB:6')
     parser.add_argument('--in_gray', type=bool, default=True, help='run resnet2d with grayscale input, else RGB')    
     ### Parameters for 3-D CNN
