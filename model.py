@@ -70,7 +70,7 @@ def loadNetwork(net, model_path, checkpoint=True, prefix='module.'):
             else:
                 print("size mismatch for weight: ", key)                
         else:
-            print(key)
+            print("key: ", key)
     net.load_state_dict(my_state_dict, strict=True)  
     return net
 

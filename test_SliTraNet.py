@@ -218,8 +218,8 @@ if __name__ == '__main__':
     parser.add_argument('--pred_dir', help='path to 2d result dir',type=str, default='results/test/resnet18_gray')
     parser.add_argument('--backbone_2D', help='name of 2d backbone (resnet18 or resnet50)',type=str, default='resnet18')   
     parser.add_argument('--model_path_2D', help='path of weights resnet2d',type=str, default='../weights/Frame_similarity_ResNet18_gray.pth')
-    parser.add_argument('--slide_thresh', type=int, default=3, help='threshold for minimum static slide length')
-    parser.add_argument('--video_thresh', type=int, default=10, help='threshold for minimum video length to distinguish from gradual transition') # change from 13
+    parser.add_argument('--slide_thresh', type=int, default=8, help='threshold for minimum static slide length')
+    parser.add_argument('--video_thresh', type=int, default=13, help='threshold for minimum video length to distinguish from gradual transition') # change from 13
     parser.add_argument('--input_nc', type=int, default=2, help='number of input channels for ResNet: gray:2, RGB:6')
     parser.add_argument('--in_gray', type=bool, default=True, help='run resnet2d with grayscale input, else RGB')    
     ### Parameters for 3-D CNN

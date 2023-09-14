@@ -51,16 +51,21 @@ def detect_initial_slide_transition_candidates_resnet2d(net, videofile, base, ro
         opt.input_nc = 6
     my_transform = BasicTransform(data_shape = data_shape) #, blur = opt.blur)
     activation = nn.Sigmoid()
+
+    all_predictions = []
     
     for i in range(N_frames):
 
         frame = vr[i]
- 
+
+        # create imgs to store first anchor and second img to compare with. (2 frames, H, W, C) # 2 channels for gray
         imgs = torch.zeros((2,opt.patch_size,opt.patch_size,int(opt.input_nc/2)))
             
         if opt.in_gray: #opencv rgb2gray for torch
+            print("debugging: opt.in_gray true", frame.shape)
             frame = 0.299*frame[...,0]+0.587*frame[...,1]+0.114*frame[...,2]
             frame = frame.unsqueeze(2) # but nothing changed!!
+            print("after multiplications and unsqueeze, ", frame.shape)
         
         # crop to bounding box region
         frame = crop_frame(frame,roi[0],roi[1],roi[2],roi[3])  # frame.shape = torch.Size([136, 256, 1])
@@ -83,7 +88,7 @@ def detect_initial_slide_transition_candidates_resnet2d(net, videofile, base, ro
         else:
             imgs[0,:H,:W,:C] = anchor_frame
             
-        imgs = my_transform(imgs)
+        imgs = my_transform(imgs)  # permutes, reshapes, and normalises pixels -> ONE image of 4 layers instead of 2 image 2 layers (for gray)
         
         with torch.no_grad():
             #imgs = imgs.cuda()
@@ -91,8 +96,8 @@ def detect_initial_slide_transition_candidates_resnet2d(net, videofile, base, ro
             pred = net(imgs.unsqueeze(0))
             pred = pred.squeeze(1)            
             pred = activation(pred)
+            all_predictions.append(pred)
             if pred<0.5: #transition (class 0)
-                print(pred)
                 if (i - anchor_frame_idx) > opt.slide_thresh: #static frame
                     if video_frame_idx is not None: 
                         if (video_frame_idx - prev_video_frame_idx) > opt.video_thresh:
@@ -118,13 +123,13 @@ def detect_initial_slide_transition_candidates_resnet2d(net, videofile, base, ro
                 anchor_frame_idx = i
                 anchor_frame = frame 
                
-    print(len(frame_ids_1)) 
+    print("length of all predicted results", len(all_predictions)) 
     frame_ids_1 = np.array(frame_ids_1)
     frame_ids_2 = np.array(frame_ids_2)
     
     #write to file
+    print("-- write results file")
     logfile_path = os.path.join(out_dir, base + "_results.txt")
-    print("stage 1 debugging, check file path", logfile_path)
     f = open(logfile_path, "w")
     f.write('Slide No, FrameID0, FrameID1\n')
     f.close()    
@@ -134,6 +139,12 @@ def detect_initial_slide_transition_candidates_resnet2d(net, videofile, base, ro
         f = open(logfile_path, "a")
         f.write("{}, {}, {}\n".format(slide_id,frame_id_1,frame_id_2))
         f.close() 
+
+    print("-- write prediction file")
+    logfile_path = os.path.join(out_dir, base + "_all_pred_results.txt")
+    f = open(logfile_path, "w")
+    f.write(str(all_predictions))
+    f.close()   
             
 def test_resnet2d(opt):
     torch.manual_seed(0)

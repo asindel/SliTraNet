@@ -59,7 +59,7 @@ class VideoClipTestDataset(data.Dataset):
         clip_list = []
         transition_no = []
         #self.vr = VideoReader(videofile, width=self.load_size[1], height=self.load_size[0])
-        self.vr = get_frames_as_tensor(videofile, "MoviePy", 1)
+        self.vr = get_frames_as_tensor(videofile, "MoviePy")
         self.roi = roi
         self.transform = transform
 
