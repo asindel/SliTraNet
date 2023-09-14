@@ -5,5 +5,11 @@ Desktop.ini
 # Compile C++ files
 *.out
 
+# Python files 
+*.pyc
+
+# Ignore python notebook for testing
+*.ipynb
+
 # Set results folder as untracked
 /results/

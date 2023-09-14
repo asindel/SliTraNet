@@ -38,11 +38,13 @@ def determine_load_size_roi(videofile, rois, patch_size, full_size=False):
     #h = roi[3] - roi[1] #y2-y1
     #scaling factor
     f = patch_size/w            
+    print(f"path size is {patch_size} with width {w} which gives scaling factor f = {f}")
     #vr0 = VideoReader(videofile)   
     vr0 = get_frames_as_tensor(videofile, "MoviePy", 1)
 
     frame = vr0[0]
     H1,W1,_ = frame.shape #HR video: 1920x1080
+    print(f"default height and width of 0th frame for {name} is {H1}, and {W1}")
     H2 = round(H1*f)
     W2 = round(W1*f)            
     load_size_roi = np.array((H2,W2), np.int32)
@@ -55,6 +57,7 @@ def determine_load_size_roi(videofile, rois, patch_size, full_size=False):
         H3 = round(H1*f2)
         W3 = round(W1*f2)            
         load_size_full = np.array((H3,W3), np.int32) 
+        print(base, roi, load_size_roi, load_size_full , " are returned in determine_load_size_roi")
         return base, roi, load_size_roi, load_size_full
         
     return base, roi, load_size_roi
