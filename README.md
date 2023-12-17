@@ -1,17 +1,17 @@
 # SliTraNet
 Automatic Detection of Slide Transitions in Lecture Videos using Convolutional Neural Networks
 
-This is the source code to the conference article "SliTraNet: Automatic Detection of Slide Transitions in Lecture Videos using Convolutional Neural Networks" accepted at OAGM Workshop 2021.
+This is the source code to the conference article "SliTraNet: Automatic Detection of Slide Transitions in Lecture Videos using Convolutional Neural Networks" published at OAGM Workshop 2021.
 
-If you use the code, please cite our [paper](https://arxiv.org/pdf/2202.03540.pdf)
+If you use the code, please cite our [paper](https://openlib.tugraz.at/download.php?id=621f329186973&location=browse) ([arxiv](https://arxiv.org/pdf/2202.03540.pdf))
 
-	  @misc{sindel2022slitranet,
+	  @InProceedings{sindel2022slitranet,
 		title={SliTraNet: Automatic Detection of Slide Transitions in Lecture Videos using Convolutional Neural Networks},
 		author={Aline Sindel and Abner Hernandez and Seung Hee Yang and Vincent Christlein and Andreas Maier},
 		year={2022},
-		eprint={2202.03540},
-		archivePrefix={arXiv},
-		primaryClass={cs.CV}
+		booktitle={Proceedings of the OAGM Workshop 2021},
+		doi={10.3217/978-3-85125-869-1-10},
+		pages={59-64}		
 	  }
 
 ## Requirements
